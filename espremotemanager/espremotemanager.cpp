@@ -27,6 +27,10 @@ void EspRemoteManager::requestReceived(WebserverClientConnection &client, const 
     {
         sendRootResponse(client, url, query);
     }
+    else if (url.path() == "/rebootAll")
+    {
+        sendRebootAllResponse(client, url, query);
+    }
     else if (url.path() == "/reboot")
     {
         sendRebootResponse(client, url, query);
@@ -65,6 +69,7 @@ void EspRemoteManager::sendRootResponse(WebserverClientConnection &client, const
                 "</head>"
                 "<body>"
                     "<h1>ESP Remote Manager</h1>"
+                    "<a href=\"rebootAll\">Reboot all</a>"
                     "<table class=\"table table-striped table-bordered table-sm\" style=\"width: initial;\">"
                         "<thead>"
                             "<tr>"
@@ -109,6 +114,15 @@ void EspRemoteManager::sendRootResponse(WebserverClientConnection &client, const
             "</html>";
 
     if (!client.sendFullResponse(200, "Ok", {{"Content-Type", "text/html"}}, content.toUtf8()))
+        qWarning() << "sending response failed";
+}
+
+void EspRemoteManager::sendRebootAllResponse(WebserverClientConnection &client, const QUrl &url, const QUrlQuery &query)
+{
+    for (auto client : m_clients)
+        client->reboot();
+
+    if (!client.sendFullResponse(200, "Ok", {{"Content-Type", "text/plain"}}, "peer reboot commands sent!"))
         qWarning() << "sending response failed";
 }
 

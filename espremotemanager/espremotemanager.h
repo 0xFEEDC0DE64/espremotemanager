@@ -24,6 +24,7 @@ private slots:
 
 private:
     void sendRootResponse(WebserverClientConnection &client, const QUrl &url, const QUrlQuery &query);
+    void sendRebootAllResponse(WebserverClientConnection &client, const QUrl &url, const QUrlQuery &query);
     void sendRebootResponse(WebserverClientConnection &client, const QUrl &url, const QUrlQuery &query);
 
     QWebSocketServer &m_websocketServer;
