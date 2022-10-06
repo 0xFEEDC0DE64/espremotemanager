@@ -39,4 +39,6 @@ private:
     Status m_status{RequestLine};
 
     Request m_request;
+
+    bool m_closeConnectionAfterResponse{};
 };

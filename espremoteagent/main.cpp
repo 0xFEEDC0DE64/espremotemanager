@@ -1,5 +1,6 @@
 #include <QCoreApplication>
 #include <QSettings>
+#include <QWebSocketServer>
 #include <QUrl>
 
 #include "espremoteagent.h"
@@ -59,9 +60,24 @@ int main(int argc, char *argv[])
             qFatal("could not parse webserver port");
     }
 
-    EspRemoteAgent agent{std::move(serialPortConfigs)};
+    QHostAddress websocketListen = parseHostAddress(settings.value("Websocket/listen").toString());
+    int websocketPort;
+    {
+        bool ok{};
+        websocketPort = settings.value("Websocket/port", 1234).toInt(&ok);
+        if (!ok)
+            qFatal("could not parse webserver port");
+    }
+
+    QWebSocketServer websocketServer{"dafuq", QWebSocketServer::NonSecureMode};
+
+    EspRemoteAgent agent{websocketServer, std::move(serialPortConfigs)};
+
     if (!agent.listen(webserverListen, webserverPort))
         qFatal("could not start listening %s", qPrintable(agent.errorString()));
+
+    if (!websocketServer.listen(websocketListen, websocketPort))
+        qFatal("could not start webserver listening %s", qPrintable(websocketServer.errorString()));
 
     return app.exec();
 }

@@ -58,7 +58,7 @@ bool WebserverClientConnection::sendFullResponse(int status, const QByteArray &m
     };
 
     if (!containsKey("Connection"))
-        responseHeaders.insert("Connection", "keep");
+        responseHeaders.insert("Connection", m_closeConnectionAfterResponse ? "close" : "keep");
 
     if (!response.isEmpty() && !containsKey("Content-Length"))
         responseHeaders.insert("Content-Length", QString::number(response.size()).toUtf8());
@@ -68,6 +68,9 @@ bool WebserverClientConnection::sendFullResponse(int status, const QByteArray &m
 
     m_socket->write(response);
     m_socket->flush();
+
+    if (m_closeConnectionAfterResponse)
+        m_socket->close();
 
     m_request.clear();
     m_status = RequestLine;
@@ -120,9 +123,23 @@ void WebserverClientConnection::readyRead()
             {
                 const auto index = line.indexOf(": ");
                 if (index == -1)
+                {
                     qWarning() << "could not parse request header" << line;
-                else
-                    m_request.headers.insert(line.left(index), line.mid(index + 2));
+                    continue;
+                }
+
+                auto key = line.left(index);
+                auto value = line.mid(index + 2);
+
+                if (key.compare("Connection", Qt::CaseInsensitive) == 0)
+                {
+                    if (value.compare("close", Qt::CaseInsensitive) == 0)
+                        m_closeConnectionAfterResponse = true;
+                    else if (value.compare("keep-alive", Qt::CaseInsensitive) == 0)
+                        m_closeConnectionAfterResponse = false;
+                }
+
+                m_request.headers.insert(std::move(key), std::move(value));
             }
 
             continue;

@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
         qFatal("could not start webserver listening %s", qPrintable(manager.errorString()));
 
     if (!websocketServer.listen(websocketListen, websocketPort))
-        qFatal("could not start webserver listening %s", qPrintable(manager.errorString()));
+        qFatal("could not start webserver listening %s", qPrintable(websocketServer.errorString()));
 
     return app.exec();
 }

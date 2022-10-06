@@ -44,9 +44,9 @@ void EspRemoteManager::newConnection()
 {
     while (const auto socket = m_websocketServer.nextPendingConnection())
     {
-        auto ö = new EspRemoteClient(socket, *this, this);
-        connect(ö, &QObject::destroyed, this, &EspRemoteManager::clientDestroyed);
-        m_clients.emplace_back(ö);
+        auto client = new EspRemoteClient(socket, *this, this);
+        connect(client, &QObject::destroyed, this, &EspRemoteManager::clientDestroyed);
+        m_clients.emplace_back(client);
     }
 }
 

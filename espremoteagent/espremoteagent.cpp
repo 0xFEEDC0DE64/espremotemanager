@@ -1,5 +1,7 @@
 #include "espremoteagent.h"
 
+#include <QWebSocketServer>
+#include <QWebSocket>
 #include <QDebug>
 #include <QUrl>
 #include <QUrlQuery>
@@ -9,9 +11,12 @@
 #include "espremoteagentcontainers.h"
 #include "espremoteport.h"
 
-EspRemoteAgent::EspRemoteAgent(std::vector<SerialPortConfig> &&serialPortConfigs, QObject *parent) :
-    AbstractWebserver{parent}
+EspRemoteAgent::EspRemoteAgent(QWebSocketServer &websocketServer, std::vector<SerialPortConfig> &&serialPortConfigs, QObject *parent) :
+    AbstractWebserver{parent},
+    m_websocketServer{websocketServer}
 {
+    connect(&m_websocketServer, &QWebSocketServer::newConnection, this, &EspRemoteAgent::newWebsocketConnect);
+
     m_ports.reserve(serialPortConfigs.size());
 
     for (auto &config : serialPortConfigs)
@@ -52,6 +57,35 @@ void EspRemoteAgent::requestReceived(WebserverClientConnection &client, const Re
     else
         if (!client.sendFullResponse(404, "Not Found", {{"Content-Type", "text/plain"}}, "The requested path \"" + request.path + "\" was not found."))
             qWarning() << "sending response failed";
+}
+
+void EspRemoteAgent::newWebsocketConnect()
+{
+    while (const auto socket = m_websocketServer.nextPendingConnection())
+    {
+        connect(socket, &QWebSocket::disconnected, socket, &QObject::deleteLater);
+
+        auto path = socket->requestUrl().path();
+        if (path.startsWith('/'))
+            path.remove(0, 1);
+        bool ok{};
+        int id = path.toInt(&ok);
+        if (!ok)
+        {
+            qWarning() << "invalid id" << path;
+            socket->close();
+            continue;
+        }
+
+        if (id < 0 || id >= m_ports.size())
+        {
+            qWarning() << "invalid id" << path;
+            socket->close();
+            continue;
+        }
+
+        (*std::next(std::begin(m_ports), id))->clientConnected(socket);
+    }
 }
 
 void EspRemoteAgent::sendRootResponse(WebserverClientConnection &client, const QUrl &url, const QUrlQuery &query)

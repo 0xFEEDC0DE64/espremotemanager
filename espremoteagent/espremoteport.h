@@ -35,6 +35,8 @@ public:
     bool tryOpen();
     void close();
 
+    void clientConnected(QWebSocket *client);
+
 protected:
     void timerEvent(QTimerEvent *event) override;
 
@@ -44,6 +46,7 @@ private slots:
     void websocketDisconnected();
     void websocketError(QAbstractSocket::SocketError error);
     void websocketTextMessageReceived(const QString &message);
+    void clientDestroyed(QObject *object = nullptr);
 
 private:
     SerialPortConfig m_config;
@@ -53,4 +56,6 @@ private:
     iterable_queue<QString> m_logOutput;
 
     int m_reconnectTimerId{-1};
+
+    std::vector<QWebSocket*> m_clients;
 };

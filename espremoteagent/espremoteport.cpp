@@ -110,6 +110,18 @@ void EspRemotePort::close()
     m_port->close();
 }
 
+void EspRemotePort::clientConnected(QWebSocket *client)
+{
+    if (!client)
+    {
+        qWarning() << "invalid client";
+        return;
+    }
+
+    connect(client, &QObject::destroyed, this, &EspRemotePort::clientDestroyed);
+    m_clients.emplace_back(client);
+}
+
 void EspRemotePort::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == m_reconnectTimerId)
@@ -139,6 +151,9 @@ void EspRemotePort::serialReadyRead()
             if (line.endsWith('\r'))
                 line.chop(1);
         }
+
+        for (auto &client : m_clients)
+            client->sendTextMessage(line);
 
 //        qDebug() << line;
 
@@ -222,4 +237,9 @@ void EspRemotePort::websocketTextMessageReceived(const QString &message)
     }
     else
         qWarning() << "unknown command type" << type;
+}
+
+void EspRemotePort::clientDestroyed(QObject *object)
+{
+    m_clients.erase(std::remove(std::begin(m_clients), std::end(m_clients), object), std::end(m_clients));
 }
