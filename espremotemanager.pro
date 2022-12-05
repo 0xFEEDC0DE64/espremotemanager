@@ -3,7 +3,8 @@ TEMPLATE = subdirs
 SUBDIRS += \
     espremoteagent \
     espremotemanager \
-    webserver
+    webserver \
+    websocketlogger
 
 espremoteagent.depends += webserver
 espremotemanager.depends += webserver
