@@ -48,8 +48,36 @@ int main(int argc, char *argv[])
         });
     };
 
-    probePort("PortA");
-    probePort("PortB");
+    probePort("Port00");
+    probePort("Port01");
+    probePort("Port02");
+    probePort("Port03");
+    probePort("Port04");
+    probePort("Port05");
+    probePort("Port06");
+    probePort("Port07");
+    probePort("Port08");
+    probePort("Port09");
+    probePort("Port10");
+    probePort("Port11");
+    probePort("Port12");
+    probePort("Port13");
+    probePort("Port14");
+    probePort("Port15");
+    probePort("Port16");
+    probePort("Port17");
+    probePort("Port18");
+    probePort("Port19");
+    probePort("Port20");
+    probePort("Port21");
+    probePort("Port22");
+    probePort("Port23");
+    probePort("Port24");
+    probePort("Port25");
+    probePort("Port26");
+    probePort("Port27");
+    probePort("Port28");
+    probePort("Port29");
 
     QHostAddress webserverListen = parseHostAddress(settings.value("Webserver/listen").toString());
     int webserverPort;
