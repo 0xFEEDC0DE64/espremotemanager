@@ -1,0 +1,14 @@
+[Unit]
+Description=ESP Remote Agent
+
+[Service]
+Type=simple
+#User=pi
+#Group=pi
+Restart=always
+ExecStart=
+WorkingDirectory=/home/pi/build-espremotemanager
+ExecStart=/home/pi/build-espremotemanager/bin/espremoteagent
+
+[Install]
+WantedBy=network-online.target

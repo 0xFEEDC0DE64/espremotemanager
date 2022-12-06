@@ -1,0 +1,16 @@
+[Unit]
+Description=Charger Logger 0
+Requires=espremoteagent.service
+After=espremoteagent.service
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+Restart=always
+ExecStart=
+WorkingDirectory=/home/pi/build-espremotemanager
+ExecStart=/home/pi/build-espremotemanager/bin/websocketlogger ws://localhost:81/0
+
+[Install]
+WantedBy=network-online.target
